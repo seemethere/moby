@@ -157,7 +157,10 @@ test-unit: build ## run the unit tests
 	$(DOCKER_RUN_DOCKER) hack/make.sh test-unit
 
 tgz: build ## build the archives (.zip on windows and .tgz\notherwise) containing the binaries
-	$(DOCKER_RUN_DOCKER) hack/make.sh dynbinary binary cross tgz
+	$(DOCKER_RUN_DOCKER) hack/make.sh binary cross tgz
+
+eli-static: build ## cross build the binary for windows
+	$(DOCKER_RUN_DOCKER) eli-hack/make-static.sh
 
 validate: build ## validate DCO, Seccomp profile generation, gofmt,\n./pkg/ isolation, golint, tests, tomls, go vet and vendor
 	$(DOCKER_RUN_DOCKER) hack/validate/all
