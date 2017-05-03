@@ -20,6 +20,8 @@ main() {
     local where_to_pull="bundles/$version/static/$os/$arch"
     local where_to_put="bundles/$version/eli-tgz/$os/$arch"
     local where_to_build="$where_to_put/build"
+    local tar_base_dir="docker"
+    local tar_path="$where_to_build/$tar_base_dir"
     local tgz_name="$where_to_put/$DOCKER_CLIENT_BINARY_NAME-$VERSION.tgz"
 
     echo "Checking if $where_to_pull exists..."
@@ -34,23 +36,23 @@ main() {
     fi
 
     # Build the build directory, it should build all the parents
-    mkdir -p "$where_to_build"
+    mkdir -p "$tar_path"
 
     local static_binaries=$(find_static_binaries "$where_to_pull" "$version")
     for binary in $static_binaries; do
         echo "Copying over binary: $binary"
         # Strip `-$version` it's not needed in the tgz
         stripped_binary=$(basename "$binary" | sed "s/-$version//g")
-        cp "$binary" "$where_to_build/$stripped_binary"
+        cp "$binary" "$tar_path/$stripped_binary"
     done
 
     for shell in bash fish zsh; do
         echo "Copying over completion for shell: $shell"
-        mkdir -p "$where_to_build/completion/$shell"
+        mkdir -p "$tar_path/completion/$shell"
         find "contrib/completion/$shell" \
             -type f \
             -name "*docker*" \
-            -exec cp {} "$where_to_build/completion/$shell" \;
+            -exec cp {} "$tar_path/completion/$shell" \;
     done
 
     echo "Create tgz from $where_to_build and naming it $tgz_name"
@@ -58,7 +60,7 @@ main() {
         --numeric-owner --owner 0 \
         -C "$where_to_build" \
         -czf "$tgz_name" \
-        "docker"
+        "$tar_base_dir"
 
     hash_files "$tgz_name"
 
