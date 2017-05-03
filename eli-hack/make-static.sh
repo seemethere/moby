@@ -101,6 +101,7 @@ build() {
     echo "Building: $DEST/$full_name"
     # echo "BUILDFLAGS: ${BUILDFLAGS[@]}"
     # env
+    # TODO: For this utilize gox to do cross compilation
     go build \
         -o "$DEST/$full_name" \
         "${BUILDFLAGS[@]}" \
@@ -137,13 +138,15 @@ main() {
     gen_buildtags
 
     export VERSION=$(< ./VERSION)
+    local arch="$(go env GOARCH)"
+    local os="$(go env GOOS)"
     local version_dest="bundles/$VERSION"
     if [[ -d "$version_dest" ]]; then
         echo "Removing old directory: $version_dest"
         rm -rf "$version_dest"
     fi
     echo "Creating directory: $version_dest"
-    export DEST="$version_dest/static"
+    export DEST="$version_dest/static/$os/$arch"
     mkdir -p "$DEST"
 
     source hack/make/.go-autogen
