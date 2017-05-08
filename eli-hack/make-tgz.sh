@@ -37,17 +37,19 @@ main() {
 
     # Build the build directory, it should build all the parents
     mkdir -p "$tar_path"
+    echo "Copying over binary: /usr/local/bin/docker -> $tar_path/docker"
+    cp /usr/local/bin/docker "$tar_path/"
 
     local static_binaries=$(find_static_binaries "$where_to_pull" "$version")
     for binary in $static_binaries; do
-        echo "Copying over binary: $binary"
         # Strip `-$version` it's not needed in the tgz
         stripped_binary=$(basename "$binary" | sed "s/-$version//g")
+        echo "Copying over binary: $binary -> $tar_path/$stripped_binary"
         cp "$binary" "$tar_path/$stripped_binary"
     done
 
     for shell in bash fish zsh; do
-        echo "Copying over completion for shell: $shell"
+        echo "Copying over completion for shell: $shell -> $tar_path/completion/$shell"
         mkdir -p "$tar_path/completion/$shell"
         find "contrib/completion/$shell" \
             -type f \
@@ -55,7 +57,6 @@ main() {
             -exec cp {} "$tar_path/completion/$shell" \;
     done
 
-    cp /usr/local/bin/docker "$tar_path/"
 
     echo "Create tgz from $where_to_build and naming it $tgz_name"
     tar \
