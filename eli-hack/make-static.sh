@@ -151,7 +151,6 @@ main() {
 
     source hack/make/.go-autogen
 
-    build "$DOCKER_CLIENT_BINARY_NAME" 'github.com/docker/docker/cli'
     build "$DOCKER_DAEMON_BINARY_NAME" 'github.com/docker/docker/cmd/dockerd'
 
     copy_binaries "$DEST" 'hash'

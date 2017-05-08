@@ -55,6 +55,8 @@ main() {
             -exec cp {} "$tar_path/completion/$shell" \;
     done
 
+    cp /usr/local/bin/docker "$tar_path/"
+
     echo "Create tgz from $where_to_build and naming it $tgz_name"
     tar \
         --numeric-owner --owner 0 \
