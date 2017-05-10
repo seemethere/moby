@@ -132,6 +132,7 @@ export DOCKER_GITCOMMIT=%{_gitcommit}
 %install
 # install binary
 install -d $RPM_BUILD_ROOT/%{_bindir}
+install -p -m 755 /usr/local/bin/docker $RPM_BUILD_ROOT/%{_bindir}/docker
 install -p -m 755 bundles/%{_origversion}/dynbinary-daemon/dockerd-%{_origversion} $RPM_BUILD_ROOT/%{_bindir}/dockerd
 
 # install proxy
@@ -173,12 +174,12 @@ install -p -m 644 contrib/completion/zsh/_docker $RPM_BUILD_ROOT/usr/share/zsh/v
 install -p -m 644 contrib/completion/fish/docker.fish $RPM_BUILD_ROOT/usr/share/fish/vendor_completions.d/docker.fish
 
 # install manpages
-install -d %{buildroot}%{_mandir}/man1
-install -p -m 644 man/man1/*.1 $RPM_BUILD_ROOT/%{_mandir}/man1
-install -d %{buildroot}%{_mandir}/man5
-install -p -m 644 man/man5/*.5 $RPM_BUILD_ROOT/%{_mandir}/man5
-install -d %{buildroot}%{_mandir}/man8
-install -p -m 644 man/man8/*.8 $RPM_BUILD_ROOT/%{_mandir}/man8
+# install -d %{buildroot}%{_mandir}/man1
+# install -p -m 644 man/man1/*.1 $RPM_BUILD_ROOT/%{_mandir}/man1
+# install -d %{buildroot}%{_mandir}/man5
+# install -p -m 644 man/man5/*.5 $RPM_BUILD_ROOT/%{_mandir}/man5
+# install -d %{buildroot}%{_mandir}/man8
+# install -p -m 644 man/man8/*.8 $RPM_BUILD_ROOT/%{_mandir}/man8
 
 # add vimfiles
 install -d $RPM_BUILD_ROOT/usr/share/vim/vimfiles/doc
@@ -214,9 +215,9 @@ install -p -m 644 contrib/syntax/nano/Dockerfile.nanorc $RPM_BUILD_ROOT/usr/shar
 /usr/share/zsh/vendor-completions/_docker
 /usr/share/fish/vendor_completions.d/docker.fish
 %doc
-/%{_mandir}/man1/*
-/%{_mandir}/man5/*
-/%{_mandir}/man8/*
+# /%{_mandir}/man1/*
+# /%{_mandir}/man5/*
+# /%{_mandir}/man8/*
 /usr/share/vim/vimfiles/doc/dockerfile.txt
 /usr/share/vim/vimfiles/ftdetect/dockerfile.vim
 /usr/share/vim/vimfiles/syntax/dockerfile.vim

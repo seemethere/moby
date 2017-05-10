@@ -135,7 +135,7 @@ install: ## install the linux binaries
 	KEEPBUNDLE=1 hack/make.sh install-binary
 
 manpages: ## Generate man pages from go source and markdown
-	docker build ${DOCKER_BUILD_ARGS} -t docker-manpage-dev -f "man/$(DOCKERFILE)" ./man
+	docker build --no-cache ${DOCKER_BUILD_ARGS} -t docker-manpage-dev -f "man/$(DOCKERFILE)" ./man
 	docker run --rm \
 		-v $(PWD):/go/src/github.com/docker/docker/ \
 		docker-manpage-dev
