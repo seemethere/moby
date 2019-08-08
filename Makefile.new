@@ -1,0 +1,94 @@
+# Set verbose values
+VERBOSE=
+GO_VERBOSE=-v
+ifeq ($(VERBOSE),)
+	V = @
+	GO_VERBOSE=
+endif
+
+GO=$(shell which go)
+ifeq ($(GO),)
+	$(error go must be installed)
+endif
+
+# GO related variables
+PKG            := github.com/docker/docker
+VERSION_PKG    := $(PKG)/dockerversion
+GO_FILES       := $(shell find . -name "*.go")
+
+# User variables (Blank by default)
+BUILDTAGS      ?=
+LDFLAGS        ?=
+
+# Version related variables
+GITCOMMIT      ?= $(shell git rev-parse HEAD)
+VERSION        ?= dev
+BUILDTIME      ?= $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
+IAMSTATIC       = false
+PLATFORM       ?=
+PRODUCT        ?= Moby Engine
+LICENSE        ?=
+
+# Define our own defaults, but let users add their own on top
+GOOS           ?=$(shell $(GO) env GOOS)
+GOARCH         ?=$(shell $(GO) env GOARCH)
+GOARM          ?=$(shell $(GO) env GOARM)
+GO_BUILDMODE    =
+ifneq ($(GOOS),windows)
+GO_BUILDMODE    = -buildmode pie
+endif
+GO_BUILDTAGS    = netgo osusergo apparmor seccomp selinux journald
+GO_BUILDTAGS   += $(BUILDTAGS)
+GO_LDFLAGS      = -w
+GO_LDFLAGS     += -X "$(VERSION_PKG).GitCommit=$(GITCOMMIT)"
+GO_LDFLAGS     += -X "$(VERSION_PKG).Version=$(VERSION)"
+GO_LDFLAGS     += -X "$(VERSION_PKG).BuildTime=$(BUILDTIME)"
+GO_LDFLAGS     += -X "$(VERSION_PKG).IAmStatic=$(IAMSTATIC)"
+GO_LDFLAGS     += -X "$(VERSION_PKG).PlatformName=$(PLATFORM)"
+GO_LDFLAGS     += -X "$(VERSION_PKG).ProductName=$(PRODUCT)"
+GO_LDFLAGS     += -X "$(VERSION_PKG).DefaultProductLicense=$(LICENSE)"
+GO_LDFLAGS     += $(LDFLAGS)
+
+OUTDIR          = bundles/binary-daemon
+
+# TODO: add arch / platform specific makefiles (if needed)
+
+all: binary
+
+.PHONY: clean
+clean:
+	$(V)$(RM) -r bundles/
+
+.PHONY: static
+static: BUILDTAGS += static_build
+static: LDFLAGS   += -extldflags "-static"
+static: IAMSTATIC  = true
+static: $(OUTDIR)/dockerd
+
+.PHONY: binary
+binary: static
+
+.PHONY: dynbinary
+dynbinary: $(OUTDIR)/dockerd
+
+$(OUTDIR)/dockerd: $(OUTDIR)/dockerd-dev
+	@echo "+ Linking $< $@"
+	$(V)ln -f $< $@
+
+$(OUTDIR)/dockerd-dev: $(GO_FILES)
+	@echo "+ Building: $@"
+	@echo '+ GOOS="$(GOOS)" GOARCH="$(GOARCH)" GOARM="$(GOARM)" IAMSTATIC="$(IAMSTATIC)"'
+	@echo '+ BUILDTAGS="$(GO_BUILDTAGS)"'
+	$(V)$(GO) build $(GO_VERBOSE) -o $@ -tags '$(GO_BUILDTAGS)' -installsuffix netgo $(GO_BUILDMODE) -ldflags '$(GO_LDFLAGS)' $(PKG)/cmd/dockerd
+	@echo "+ Created binary: $@"
+
+
+PREFIX  =/usr/local
+BINDIR  =$(PREFIX)/bin
+
+.PHONY: install
+install: $(BINDIR)/dockerd
+
+$(BINDIR)/dockerd: $(OUTDIR)/dockerd
+	$(V)install -v -m 0755 $< $@
+
